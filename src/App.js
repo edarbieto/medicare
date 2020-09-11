@@ -1,18 +1,44 @@
 import React from "react";
-import Login from "./Login";
-import Main from "./Main";
-import { BrowserRouter, Switch, Route } from "react-router-dom";
+import Login from "./views/Login";
+import Dashboard from "./views/Dashboard";
+import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
+import AuthService from "./services/AuthService";
+
+const DashboardRoute = ({ ...routeProps }) => (
+  <Route
+    {...routeProps}
+    render={(props) =>
+      AuthService.getUser() && AuthService.isTokenValid() ? (
+        <Dashboard {...props} />
+      ) : (
+        <Redirect to="/login" />
+      )
+    }
+  />
+);
+
+const LoginRoute = ({ ...routeProps }) => (
+  <Route
+    {...routeProps}
+    render={(props) =>
+      !AuthService.getUser() || !AuthService.isTokenValid() ? (
+        <Login {...props} />
+      ) : (
+        <Redirect to="/dashboard" />
+      )
+    }
+  />
+);
 
 export default function App() {
   return (
     <BrowserRouter>
       <Switch>
-        <Route path="/login">
-          <Login />
+        <Route exact path="/">
+          <Redirect to="/login" />
         </Route>
-        <Route path="/">
-          <Main />
-        </Route>
+        <LoginRoute path="/login" />
+        <DashboardRoute path="/dashboard" />
       </Switch>
     </BrowserRouter>
   );

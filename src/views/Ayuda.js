@@ -44,8 +44,8 @@ export default function Ayuda() {
             nombre: "Preguntas frecuentes",
             icono: <QuestionAnswerIcon fontSize="large" />,
           },
-        ].map((item) => (
-          <Grid item xs={6} lg={4}>
+        ].map((item, index) => (
+          <Grid item xs={6} lg={4} key={index}>
             <Card className={classes.Card}>
               <CardContent>
                 {item.icono}

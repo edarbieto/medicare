@@ -9,7 +9,7 @@ import {
   TextField,
   Button,
 } from "@material-ui/core";
-import Business from "@material-ui/icons/Business";
+import BusinessIcon from "@material-ui/icons/Business";
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -29,11 +29,11 @@ export default function Contactenos() {
       </Typography>
       <Divider />
       <Grid container justify="center">
-        {[1, 2, 3].map((id) => (
-          <Grid item xs={6} lg={4}>
+        {[1, 2, 3].map((id, index) => (
+          <Grid item xs={6} lg={4} key={index}>
             <Card className={classes.card}>
               <CardContent>
-                <Business />
+                <BusinessIcon fontSize="large" />
                 <Typography variant="h6">Organización {id}</Typography>
                 <Typography variant="caption">
                   Av. Brasil 1223 - Dpto 3, Piso 7<br />
