@@ -17,7 +17,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  MenuItem,
   DialogActions,
 } from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
@@ -29,15 +28,9 @@ import DataService from "../services/DataService";
 import { useHistory, useRouteMatch, Route, Switch } from "react-router-dom";
 import ClinicaCrear from "./ClinicaCrear";
 
-// const Clinica = () => {
-//   return (
-//   );
-// };
-
-export default function Clinicas() {
+export default function Clinicas(props) {
   const history = useHistory();
   const { path, url } = useRouteMatch();
-  const [paginaTabla, setPaginaTabla] = React.useState(1);
   const [clinicas, setClinicas] = React.useState([]);
   const [clinicaDialogData, setClinicaDialogData] = React.useState({
     open: false,
@@ -47,11 +40,13 @@ export default function Clinicas() {
   });
   React.useEffect(() => {
     let mounted = true;
-    DataService.getClinicas(paginaTabla).then((data) => {
+    DataService.getClinicas().then((data) => {
       if (mounted) setClinicas(data);
     });
-    return () => (mounted = false);
-  }, [paginaTabla]);
+    return () => {
+      mounted = false;
+    };
+  }, [props.history.action]);
   return (
     <Switch>
       <Route exact path={`${path}`}>
@@ -88,7 +83,6 @@ export default function Clinicas() {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => {
-                console.log(clinicas);
                 history.push(`${url}/crear`);
               }}
             >
@@ -114,7 +108,6 @@ export default function Clinicas() {
                     <TableCell>
                       <IconButton
                         onClick={() => {
-                          console.log(clinica);
                           setClinicaDialogData({
                             open: true,
                             modo: "editar",
@@ -135,7 +128,15 @@ export default function Clinicas() {
                       >
                         <VisibilityIcon fontSize="small" />
                       </IconButton>
-                      <IconButton>
+                      <IconButton
+                        onClick={() => {
+                          DataService.deleteClinica(clinica.id).then(() => {
+                            DataService.getClinicas().then((data) =>
+                              setClinicas(data)
+                            );
+                          });
+                        }}
+                      >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </TableCell>
