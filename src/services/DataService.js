@@ -7,7 +7,7 @@ class DataService {
   async getClinicas(page = 1, pageSize = 10, filter = "") {
     try {
       const response = await axios.get(
-        `${API_URL}/clinics?page=${page}&pageSize=${pageSize}&filter=${filter}`,
+        `${API_URL}/clinics?page=${page}&pageSize=${pageSize}&filter=${filter}&status=ACTIVE`,
         { headers: AuthService.header() }
       );
       return response.data.data;
@@ -66,6 +66,18 @@ class DataService {
       return null;
     }
   }
+
+  async updateClinica(clinica) {
+    try {
+      const response = await axios.put(`${API_URL}/clinics/${clinica.id}`, clinica, {
+        headers: AuthService.header(),
+      });
+      return response.data;
+    } catch (error) {
+      return null;
+    }
+  }
+
   async deleteClinica(idClinica) {
     try {
       const response = await axios.delete(`${API_URL}/clinics/${idClinica}`, {
