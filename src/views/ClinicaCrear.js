@@ -74,9 +74,7 @@ export default function ClinicaCrear() {
           variant="contained"
           startIcon={<SaveIcon />}
           onClick={() => {
-            DataService.postClinica(clinica).then((data) =>
-              console.log(data.id)
-            );
+            DataService.postClinica(clinica).then((data) => history.goBack());
           }}
         >
           Guardar

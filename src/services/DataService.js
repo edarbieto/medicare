@@ -15,6 +15,7 @@ class DataService {
       return null;
     }
   }
+
   async getDepartamentos() {
     try {
       const response = await axios.get(`${API_URL}/addresses/departments`, {
@@ -25,6 +26,7 @@ class DataService {
       return null;
     }
   }
+
   async getProvincias(idDepartamento) {
     try {
       const response = await axios.get(
@@ -40,6 +42,7 @@ class DataService {
       return null;
     }
   }
+
   async getDistritos(idProvincia) {
     try {
       const response = await axios.get(
@@ -69,9 +72,13 @@ class DataService {
 
   async updateClinica(clinica) {
     try {
-      const response = await axios.put(`${API_URL}/clinics/${clinica.id}`, clinica, {
-        headers: AuthService.header(),
-      });
+      const response = await axios.put(
+        `${API_URL}/clinics/${clinica.id}`,
+        clinica,
+        {
+          headers: AuthService.header(),
+        }
+      );
       return response.data;
     } catch (error) {
       return null;
@@ -83,6 +90,62 @@ class DataService {
       const response = await axios.delete(`${API_URL}/clinics/${idClinica}`, {
         headers: AuthService.header(),
       });
+      return response.data;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async getAdministradores(page = 1, pageSize = 10, filter = "") {
+    try {
+      const response = await axios.get(
+        `${API_URL}/users?page=${page}&pageSize=${pageSize}&filter=${filter}&status=ACTIVE&roleID=2`,
+        { headers: AuthService.header() }
+      );
+      return response.data.data;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async postAdministrador(administrador) {
+    try {
+      const response = await axios.post(
+        `${API_URL}/users/adminclinic`,
+        administrador,
+        {
+          headers: AuthService.header(),
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async deleteAdministrador(idAdministrador) {
+    try {
+      const response = await axios.delete(
+        `${API_URL}/users/${idAdministrador}`,
+        {
+          headers: AuthService.header(),
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async updateAdministrador(administrador) {
+    try {
+      const response = await axios.put(
+        `${API_URL}/users/${administrador.id}`,
+        administrador,
+        {
+          headers: AuthService.header(),
+        }
+      );
       return response.data;
     } catch (error) {
       return null;

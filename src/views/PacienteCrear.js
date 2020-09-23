@@ -61,7 +61,6 @@ export default function PacienteCrear() {
           startIcon={<SaveIcon />}
           onClick={() => {
             // DataService.postClinica(clinica).then((data) =>
-            //   console.log(data.id)
             // );
           }}
         >

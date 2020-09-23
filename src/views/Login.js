@@ -63,7 +63,6 @@ export default function Login() {
                 onClick={async () => {
                   const loginResult = await AuthService.login(email, password);
                   if (loginResult) {
-                    console.log("ir a dash");
                     history.push("/dashboard");
                   }
                 }}

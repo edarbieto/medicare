@@ -79,9 +79,11 @@ export default function AdministradorCrear() {
           variant="contained"
           startIcon={<SaveIcon />}
           onClick={() => {
-            // DataService.postClinica(clinica).then((data) =>
-            //   console.log(data.id)
-            // );
+            const bDate = new Date(administrador.birthDate);
+            administrador.birthDate = bDate.toISOString();
+            DataService.postAdministrador(administrador).then((data) =>
+              history.goBack()
+            );
           }}
         >
           Guardar
@@ -290,6 +292,13 @@ export default function AdministradorCrear() {
               margin="dense"
               label="Contraseña"
               type="password"
+              value={administrador.password}
+              onChange={(e) =>
+                setAdministrador({
+                  ...administrador,
+                  password: e.target.value,
+                })
+              }
               fullWidth
             />
             <TextField

@@ -131,8 +131,8 @@ export default function Clinicas(props) {
               <TableBody>
                 {clinicas.map((clinica, index) => (
                   <TableRow key={clinica.id}>
-                    <TableCell>{clinica.businessName}</TableCell>
                     <TableCell>{clinica.commercialName}</TableCell>
+                    <TableCell>{clinica.businessName}</TableCell>
                     <TableCell>{clinica.ruc}</TableCell>
                     <TableCell>
                       <IconButton
@@ -459,7 +459,6 @@ export default function Clinicas(props) {
                         email: clinicaDialogData.clinica.contactEmail,
                       },
                     });
-                    console.log(clinicaDialogData.clinica);
                     DataService.updateClinica(clinicaDialogData.clinica).then(
                       () =>
                         DataService.getClinicas().then((data) => {
