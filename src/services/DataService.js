@@ -178,6 +178,21 @@ class DataService {
       return null;
     }
   }
+
+  async updatePaciente(paciente) {
+    try {
+      const response = await axios.put(
+        `${API_URL}/users/${paciente.id}`,
+        paciente,
+        {
+          headers: AuthService.header(),
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return null;
+    }
+  }
 }
 
 export default new DataService();
