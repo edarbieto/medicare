@@ -151,6 +151,33 @@ class DataService {
       return null;
     }
   }
+
+  async getPacientes(page = 1, pageSize = 10, filter = "") {
+    try {
+      const response = await axios.get(
+        `${API_URL}/users?page=${page}&pageSize=${pageSize}&filter=${filter}&status=ACTIVE&roleID=4`,
+        { headers: AuthService.header() }
+      );
+      return response.data.data;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async postPaciente(paciente) {
+    try {
+      const response = await axios.post(
+        `${API_URL}/users/patient`,
+        paciente,
+        {
+          headers: AuthService.header(),
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return null;
+    }
+  }
 }
 
 export default new DataService();

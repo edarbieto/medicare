@@ -80,7 +80,7 @@ export default function Administradores(props) {
     return () => {
       mounted = false;
     };
-  }, [props.history.action, departamentos.length, idDepartamento, idProvincia]);
+  }, [props.history.action, clinicas.length, departamentos.length, idDepartamento, idProvincia]);
   return (
     <Switch>
       <Route exact path={`${path}`}>
