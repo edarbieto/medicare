@@ -63,7 +63,7 @@ export default function Administradores(props) {
     });
     if (clinicas.length < 1) {
       DataService.getClinicas(1, 100).then((data) => {
-        if (mounted) setClinicas(data ? data : []);
+        if (mounted) setClinicas(data.data ? data.data : []);
       });
     }
     if (departamentos.length < 1) {
@@ -467,38 +467,6 @@ export default function Administradores(props) {
                         </MenuItem>
                       ))}
                     </TextField>
-                  </div>
-                  <div style={{ margin: 10 }}>
-                    <Typography variant="subtitle1">Contraseña</Typography>
-                    <Divider style={{ marginBottom: 10 }} />
-                    <TextField
-                      color="primary"
-                      variant="outlined"
-                      margin="dense"
-                      label="Contraseña"
-                      type="password"
-                      value={administradorDialogData.administrador.password}
-                      onChange={(e) =>
-                        setAdministradorDialogData({
-                          ...administradorDialogData,
-                          administrador: {
-                            ...administradorDialogData.administrador,
-                            password: e.target.value,
-                          },
-                        })
-                      }
-                      disabled={!administradorDialogData.isEditar}
-                      fullWidth
-                    />
-                    <TextField
-                      color="primary"
-                      variant="outlined"
-                      margin="dense"
-                      label="Repetir contraseña"
-                      type="password"
-                      disabled={!administradorDialogData.isEditar}
-                      fullWidth
-                    />
                   </div>
                   <div style={{ margin: 10 }}>
                     <Typography variant="subtitle1">Clínica</Typography>

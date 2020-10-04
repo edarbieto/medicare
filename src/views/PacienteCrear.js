@@ -46,7 +46,7 @@ export default function PacienteCrear() {
     let mounted = true;
     if (clinicas.length < 1) {
       DataService.getClinicas(1, 100).then((data) => {
-        if (mounted) setClinicas(data ? data : []);
+        if (mounted) setClinicas(data.data ? data.data : []);
       });
     }
     if (departamentos.length < 1) {

@@ -11,6 +11,7 @@ import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import SaveIcon from "@material-ui/icons/Save";
 import { useHistory } from "react-router-dom";
 import DataService from "../services/DataService";
+import ReactSwal from "../components/ReactSwal";
 
 export default function ClinicaCrear() {
   const history = useHistory();
@@ -74,7 +75,48 @@ export default function ClinicaCrear() {
           variant="contained"
           startIcon={<SaveIcon />}
           onClick={() => {
-            DataService.postClinica(clinica).then((data) => history.goBack());
+            if (
+              !clinica.ruc ||
+              clinica.ruc.length !== 11 ||
+              !clinica.businessName ||
+              !clinica.commercialName ||
+              !clinica.address ||
+              !clinica.ubigeo ||
+              !clinica.contactName ||
+              !clinica.email ||
+              !clinica.contactPhone ||
+              !clinica.contactCellphone
+            ) {
+              ReactSwal.fire({
+                icon: "error",
+                title: "Faltan datos",
+                text:
+                  "Revisar que todos los campos requeridos han sido completados y sean correctos",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+              });
+            } else {
+              ReactSwal.fire({
+                icon: "info",
+                title: "Por favor, espere...",
+              });
+              ReactSwal.showLoading();
+              DataService.postClinica(clinica)
+                .then(() => {
+                  history.goBack();
+                  ReactSwal.close();
+                })
+                .catch((error) => {
+                  let errs = [];
+                  for (const key in error.response.data.errors) errs.push(key);
+                  ReactSwal.fire({
+                    icon: "error",
+                    title: "Error al guardar datos",
+                    text: `${error.response.data.message}: ${errs.join(", ")}`,
+                  });
+                });
+            }
           }}
         >
           Guardar
@@ -86,6 +128,7 @@ export default function ClinicaCrear() {
             <Typography variant="subtitle1">Información general</Typography>
             <Divider style={{ marginBottom: 10 }} />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -95,6 +138,7 @@ export default function ClinicaCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -106,6 +150,7 @@ export default function ClinicaCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -117,20 +162,13 @@ export default function ClinicaCrear() {
               fullWidth
             />
           </div>
-          <div style={{ margin: 10 }}>
-            <Typography variant="subtitle1">Logo</Typography>
-            <Divider />
-          </div>
-          <div style={{ margin: 10 }}>
-            <Typography variant="subtitle1">Banner</Typography>
-            <Divider />
-          </div>
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
           <div style={{ margin: 10 }}>
             <Typography variant="subtitle1">Dirección</Typography>
             <Divider style={{ marginBottom: 10 }} />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -142,6 +180,7 @@ export default function ClinicaCrear() {
               fullWidth
             />
             <TextField
+              required
               select
               color="primary"
               variant="outlined"
@@ -163,6 +202,7 @@ export default function ClinicaCrear() {
               ))}
             </TextField>
             <TextField
+              required
               select
               color="primary"
               variant="outlined"
@@ -183,6 +223,7 @@ export default function ClinicaCrear() {
               ))}
             </TextField>
             <TextField
+              required
               select
               color="primary"
               variant="outlined"
@@ -208,13 +249,7 @@ export default function ClinicaCrear() {
             <Typography variant="subtitle1">Información de contacto</Typography>
             <Divider style={{ marginBottom: 10 }} />
             <TextField
-              color="primary"
-              variant="outlined"
-              margin="dense"
-              label="Horario"
-              fullWidth
-            />
-            <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -226,6 +261,7 @@ export default function ClinicaCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -237,6 +273,7 @@ export default function ClinicaCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -248,6 +285,7 @@ export default function ClinicaCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -256,26 +294,6 @@ export default function ClinicaCrear() {
               onChange={(e) =>
                 setClinica({ ...clinica, contactCellphone: e.target.value })
               }
-              fullWidth
-            />
-          </div>
-          <div style={{ margin: 10 }}>
-            <Typography variant="subtitle1">Contraseña</Typography>
-            <Divider style={{ marginBottom: 10 }} />
-            <TextField
-              color="primary"
-              variant="outlined"
-              margin="dense"
-              label="Contraseña"
-              type="password"
-              fullWidth
-            />
-            <TextField
-              color="primary"
-              variant="outlined"
-              margin="dense"
-              label="Repetir contraseña"
-              type="password"
               fullWidth
             />
           </div>

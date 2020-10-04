@@ -3,7 +3,6 @@ import {
   Typography,
   Divider,
   TextField,
-  InputAdornment,
   IconButton,
   Grid,
   Button,
@@ -19,8 +18,8 @@ import {
   DialogContent,
   DialogActions,
   MenuItem,
+  TablePagination,
 } from "@material-ui/core";
-import SearchIcon from "@material-ui/icons/Search";
 import AddIcon from "@material-ui/icons/Add";
 import EditIcon from "@material-ui/icons/Edit";
 import VisibilityIcon from "@material-ui/icons/Visibility";
@@ -56,10 +55,16 @@ export default function Clinicas(props) {
   const [distritos, setDistritos] = React.useState([]);
   const [idDepartamento, setIdDepartamento] = React.useState("");
   const [idProvincia, setIdProvincia] = React.useState("");
+  const [filter, setFilter] = React.useState("");
+  const [page, setPage] = React.useState(1);
+  const [count, setCount] = React.useState(0);
   React.useEffect(() => {
     let mounted = true;
-    DataService.getClinicas().then((data) => {
-      if (mounted) setClinicas(data);
+    DataService.getClinicas({ filter: filter, page: page }).then((data) => {
+      if (mounted) {
+        setClinicas(data.data);
+        if (page === 1) setCount(data.count);
+      }
     });
     if (departamentos.length < 1) {
       DataService.getDepartamentos().then((data) => {
@@ -75,7 +80,14 @@ export default function Clinicas(props) {
     return () => {
       mounted = false;
     };
-  }, [props.history.action, departamentos.length, idDepartamento, idProvincia]);
+  }, [
+    props.history.action,
+    departamentos.length,
+    idDepartamento,
+    idProvincia,
+    filter,
+    page,
+  ]);
   return (
     <Switch>
       <Route exact path={`${path}`}>
@@ -97,14 +109,10 @@ export default function Clinicas(props) {
               variant="outlined"
               margin="dense"
               style={{ width: 300 }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton>
-                      <SearchIcon></SearchIcon>
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              value={filter}
+              onChange={(e) => {
+                setPage(1);
+                setFilter(e.target.value);
               }}
             />
             <Button
@@ -162,9 +170,10 @@ export default function Clinicas(props) {
                       <IconButton
                         onClick={() => {
                           DataService.deleteClinica(clinica.id).then(() => {
-                            DataService.getClinicas().then((data) =>
-                              setClinicas(data)
-                            );
+                            DataService.getClinicas().then((data) => {
+                              setClinicas(data.data);
+                              setCount(data.count);
+                            });
                           });
                         }}
                       >
@@ -175,6 +184,14 @@ export default function Clinicas(props) {
                 ))}
               </TableBody>
             </Table>
+            <TablePagination
+              component="div"
+              rowsPerPageOptions={[]}
+              rowsPerPage={10}
+              count={count}
+              page={page - 1}
+              onChangePage={(e, p) => setPage(p + 1)}
+            />
           </TableContainer>
           <Dialog
             maxWidth="lg"
@@ -462,7 +479,8 @@ export default function Clinicas(props) {
                     DataService.updateClinica(clinicaDialogData.clinica).then(
                       () =>
                         DataService.getClinicas().then((data) => {
-                          setClinicas(data);
+                          setClinicas(data.data);
+                          setCount(data.count);
                           setClinicaDialogData({
                             ...clinicaDialogData,
                             open: false,
