@@ -3,7 +3,6 @@ import {
   Typography,
   Divider,
   TextField,
-  InputAdornment,
   IconButton,
   Grid,
   Button,
@@ -19,8 +18,8 @@ import {
   DialogContent,
   DialogActions,
   MenuItem,
+  TablePagination,
 } from "@material-ui/core";
-import SearchIcon from "@material-ui/icons/Search";
 import AddIcon from "@material-ui/icons/Add";
 import EditIcon from "@material-ui/icons/Edit";
 import VisibilityIcon from "@material-ui/icons/Visibility";
@@ -28,6 +27,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import DataService from "../services/DataService";
 import { useHistory, useRouteMatch, Route, Switch } from "react-router-dom";
 import AdministradorCrear from "./AdministradorCrear";
+import ReactSwal from "../components/ReactSwal";
 
 export default function Administradores(props) {
   const history = useHistory();
@@ -56,11 +56,19 @@ export default function Administradores(props) {
   const [idDepartamento, setIdDepartamento] = React.useState("");
   const [idProvincia, setIdProvincia] = React.useState("");
   const [clinicas, setClinicas] = React.useState([]);
+  const [filter, setFilter] = React.useState("");
+  const [page, setPage] = React.useState(1);
+  const [count, setCount] = React.useState(0);
   React.useEffect(() => {
     let mounted = true;
-    DataService.getAdministradores().then((data) => {
-      if (mounted) setAdministradores(data);
-    });
+    DataService.getAdministradores({ filter: filter, page: page }).then(
+      (data) => {
+        if (mounted) {
+          setAdministradores(data.data);
+          if (page === 1) setCount(data.count);
+        }
+      }
+    );
     if (clinicas.length < 1) {
       DataService.getClinicas(1, 100).then((data) => {
         if (mounted) setClinicas(data.data ? data.data : []);
@@ -80,7 +88,15 @@ export default function Administradores(props) {
     return () => {
       mounted = false;
     };
-  }, [props.history.action, clinicas.length, departamentos.length, idDepartamento, idProvincia]);
+  }, [
+    props.history.action,
+    clinicas.length,
+    departamentos.length,
+    idDepartamento,
+    idProvincia,
+    filter,
+    page,
+  ]);
   return (
     <Switch>
       <Route exact path={`${path}`}>
@@ -102,14 +118,10 @@ export default function Administradores(props) {
               variant="outlined"
               margin="dense"
               style={{ width: 300 }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton>
-                      <SearchIcon></SearchIcon>
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              value={filter}
+              onChange={(e) => {
+                setPage(1);
+                setFilter(e.target.value);
               }}
             />
             <Button
@@ -177,9 +189,12 @@ export default function Administradores(props) {
                           DataService.deleteAdministrador(
                             administrador.id
                           ).then(() => {
-                            DataService.getAdministradores().then((data) =>
-                              setAdministradores(data)
-                            );
+                            DataService.getAdministradores().then((data) => {
+                              setAdministradores(data.data);
+                              setCount(data.count);
+                              setPage(1);
+                              setFilter("");
+                            });
                           });
                         }}
                       >
@@ -190,6 +205,14 @@ export default function Administradores(props) {
                 ))}
               </TableBody>
             </Table>
+            <TablePagination
+              component="div"
+              rowsPerPageOptions={[]}
+              rowsPerPage={10}
+              count={count}
+              page={page - 1}
+              onChangePage={(e, p) => setPage(p + 1)}
+            />
           </TableContainer>
           <Dialog
             maxWidth="lg"
@@ -305,14 +328,6 @@ export default function Administradores(props) {
                           },
                         })
                       }
-                      disabled={!administradorDialogData.isEditar}
-                      fullWidth
-                    />
-                    <TextField
-                      color="primary"
-                      variant="outlined"
-                      margin="dense"
-                      label="CE"
                       disabled={!administradorDialogData.isEditar}
                       fullWidth
                     />
@@ -518,27 +533,63 @@ export default function Administradores(props) {
                 <Button
                   color="primary"
                   onClick={() => {
-                    // DataService.updateClinica(clinicaDialogData.clinica).then(
-                    //   () =>
-                    //     DataService.getClinicas().then((data) => {
-                    //       setClinicas(data);
-                    //       setClinicaDialogData({
-                    //         ...clinicaDialogData,
-                    //         open: false,
-                    //       });
-                    //     })
-                    // );
-                    DataService.updateAdministrador(
-                      administradorDialogData.administrador
-                    ).then(() => {
-                      DataService.getAdministradores().then((data) => {
-                        setAdministradores(data);
-                        setAdministradorDialogData({
-                          ...administradorDialogData,
-                          open: false,
-                        });
+                    if (
+                      !administradorDialogData.administrador.firstName ||
+                      !administradorDialogData.administrador.lastName ||
+                      !administradorDialogData.administrador.email ||
+                      !administradorDialogData.administrador.birthDate ||
+                      !administradorDialogData.administrador.dni ||
+                      administradorDialogData.administrador.dni.length !== 8 ||
+                      !/^\d+$/.test(administradorDialogData.administrador.dni) ||
+                      !administradorDialogData.administrador.cellPhone ||
+                      !administradorDialogData.administrador.address ||
+                      !administradorDialogData.administrador.ubigeo ||
+                      !administradorDialogData.administrador.clinic.id
+                    ) {
+                      ReactSwal.fire({
+                        icon: "error",
+                        title: "Faltan datos",
+                        text:
+                          "Revisar que todos los campos requeridos han sido completados y sean correctos",
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        allowEnterKey: false,
                       });
-                    });
+                    } else {
+                      ReactSwal.fire({
+                        icon: "info",
+                        title: "Por favor, espere...",
+                      });
+                      ReactSwal.showLoading();
+                      DataService.updateAdministrador(
+                        administradorDialogData.administrador
+                      )
+                        .then(() => {
+                          DataService.getAdministradores().then((data) => {
+                            setAdministradores(data.data);
+                            setCount(data.count);
+                            setPage(1);
+                            setFilter("");
+                            setAdministradorDialogData({
+                              ...administradorDialogData,
+                              open: false,
+                            });
+                          });
+                          ReactSwal.close();
+                        })
+                        .catch((error) => {
+                          let errs = [];
+                          for (const key in error.response.data.errors)
+                            errs.push(key);
+                          ReactSwal.fire({
+                            icon: "error",
+                            title: "Error al guardar datos",
+                            text: `${error.response.data.message}: ${errs.join(
+                              ", "
+                            )}`,
+                          });
+                        });
+                    }
                   }}
                 >
                   Guardar

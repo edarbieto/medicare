@@ -27,6 +27,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import DataService from "../services/DataService";
 import { useHistory, useRouteMatch, Route, Switch } from "react-router-dom";
 import ClinicaCrear from "./ClinicaCrear";
+import ReactSwal from "../components/ReactSwal";
 
 export default function Clinicas(props) {
   const history = useHistory();
@@ -173,6 +174,8 @@ export default function Clinicas(props) {
                             DataService.getClinicas().then((data) => {
                               setClinicas(data.data);
                               setCount(data.count);
+                              setPage(1);
+                              setFilter("");
                             });
                           });
                         }}
@@ -476,17 +479,60 @@ export default function Clinicas(props) {
                         email: clinicaDialogData.clinica.contactEmail,
                       },
                     });
-                    DataService.updateClinica(clinicaDialogData.clinica).then(
-                      () =>
-                        DataService.getClinicas().then((data) => {
-                          setClinicas(data.data);
-                          setCount(data.count);
-                          setClinicaDialogData({
-                            ...clinicaDialogData,
-                            open: false,
+                    if (
+                      !clinicaDialogData.clinica.ruc ||
+                      clinicaDialogData.clinica.ruc.length !== 11 ||
+                      !clinicaDialogData.clinica.businessName ||
+                      !clinicaDialogData.clinica.commercialName ||
+                      !clinicaDialogData.clinica.address ||
+                      !clinicaDialogData.clinica.ubigeo ||
+                      !clinicaDialogData.clinica.contactName ||
+                      !clinicaDialogData.clinica.email ||
+                      !clinicaDialogData.clinica.contactPhone ||
+                      !clinicaDialogData.clinica.contactCellphone
+                    ) {
+                      ReactSwal.fire({
+                        icon: "error",
+                        title: "Faltan datos",
+                        text:
+                          "Revisar que todos los campos requeridos han sido completados y sean correctos",
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        allowEnterKey: false,
+                      });
+                    } else {
+                      ReactSwal.fire({
+                        icon: "info",
+                        title: "Por favor, espere...",
+                      });
+                      ReactSwal.showLoading();
+                      DataService.updateClinica(clinicaDialogData.clinica)
+                        .then(() => {
+                          DataService.getClinicas().then((data) => {
+                            setClinicas(data.data);
+                            setCount(data.count);
+                            setPage(1);
+                            setFilter("");
+                            setClinicaDialogData({
+                              ...clinicaDialogData,
+                              open: false,
+                            });
                           });
+                          ReactSwal.close();
                         })
-                    );
+                        .catch((error) => {
+                          let errs = [];
+                          for (const key in error.response.data.errors)
+                            errs.push(key);
+                          ReactSwal.fire({
+                            icon: "error",
+                            title: "Error al guardar datos",
+                            text: `${error.response.data.message}: ${errs.join(
+                              ", "
+                            )}`,
+                          });
+                        });
+                    }
                   }}
                 >
                   Guardar

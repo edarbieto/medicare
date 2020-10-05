@@ -11,6 +11,7 @@ import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import SaveIcon from "@material-ui/icons/Save";
 import { useHistory } from "react-router-dom";
 import DataService from "../services/DataService";
+import ReactSwal from "../components/ReactSwal";
 
 export default function AdministradorCrear() {
   const history = useHistory();
@@ -19,6 +20,7 @@ export default function AdministradorCrear() {
     firstName: "",
     lastName: "",
     password: "",
+    passwordR: "",
     email: "",
     birthDate: "",
     dni: "",
@@ -79,11 +81,54 @@ export default function AdministradorCrear() {
           variant="contained"
           startIcon={<SaveIcon />}
           onClick={() => {
-            const bDate = new Date(administrador.birthDate);
-            administrador.birthDate = bDate.toISOString();
-            DataService.postAdministrador(administrador).then((data) =>
-              history.goBack()
-            );
+            if (
+              !administrador.firstName ||
+              !administrador.lastName ||
+              !administrador.email ||
+              !administrador.birthDate ||
+              !administrador.dni ||
+              administrador.dni.length !== 8 ||
+              !/^\d+$/.test(administrador.dni) ||
+              !administrador.cellPhone ||
+              !administrador.address ||
+              !administrador.ubigeo ||
+              !administrador.password ||
+              !administrador.passwordR ||
+              administrador.password !== administrador.passwordR ||
+              !administrador.clinic.id
+            ) {
+              ReactSwal.fire({
+                icon: "error",
+                title: "Faltan datos",
+                text:
+                  "Revisar que todos los campos requeridos han sido completados y sean correctos",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+              });
+            } else {
+              const bDate = new Date(administrador.birthDate);
+              ReactSwal.fire({
+                icon: "info",
+                title: "Por favor, espere...",
+              });
+              ReactSwal.showLoading();
+              administrador.birthDate = bDate.toISOString();
+              DataService.postAdministrador(administrador)
+                .then(() => {
+                  history.goBack();
+                  ReactSwal.close();
+                })
+                .catch((error) => {
+                  let errs = [];
+                  for (const key in error.response.data.errors) errs.push(key);
+                  ReactSwal.fire({
+                    icon: "error",
+                    title: "Error al guardar datos",
+                    text: `${error.response.data.message}: ${errs.join(", ")}`,
+                  });
+                });
+            }
           }}
         >
           Guardar
@@ -95,6 +140,7 @@ export default function AdministradorCrear() {
             <Typography variant="subtitle1">Información general</Typography>
             <Divider style={{ marginBottom: 10 }} />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -109,6 +155,7 @@ export default function AdministradorCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -123,6 +170,7 @@ export default function AdministradorCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -137,6 +185,7 @@ export default function AdministradorCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -153,6 +202,7 @@ export default function AdministradorCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -167,13 +217,7 @@ export default function AdministradorCrear() {
               fullWidth
             />
             <TextField
-              color="primary"
-              variant="outlined"
-              margin="dense"
-              label="CE"
-              fullWidth
-            />
-            <TextField
+              required
               select
               color="primary"
               variant="outlined"
@@ -192,6 +236,7 @@ export default function AdministradorCrear() {
               <MenuItem value={false}>Femenino</MenuItem>
             </TextField>
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -212,6 +257,7 @@ export default function AdministradorCrear() {
             <Typography variant="subtitle1">Dirección</Typography>
             <Divider style={{ marginBottom: 10 }} />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -223,6 +269,7 @@ export default function AdministradorCrear() {
               fullWidth
             />
             <TextField
+              required
               select
               color="primary"
               variant="outlined"
@@ -244,6 +291,7 @@ export default function AdministradorCrear() {
               ))}
             </TextField>
             <TextField
+              required
               select
               color="primary"
               variant="outlined"
@@ -264,6 +312,7 @@ export default function AdministradorCrear() {
               ))}
             </TextField>
             <TextField
+              required
               select
               color="primary"
               variant="outlined"
@@ -284,9 +333,46 @@ export default function AdministradorCrear() {
             </TextField>
           </div>
           <div style={{ margin: 10 }}>
+            <Typography variant="subtitle1">Contraseña</Typography>
+            <Divider style={{ marginBottom: 10 }} />
+            <TextField
+              required
+              color="primary"
+              variant="outlined"
+              margin="dense"
+              label="Contraseña"
+              type="password"
+              value={administrador.password}
+              onChange={(e) =>
+                setAdministrador({
+                  ...administrador,
+                  password: e.target.value,
+                })
+              }
+              fullWidth
+            />
+            <TextField
+              required
+              color="primary"
+              variant="outlined"
+              margin="dense"
+              label="Repetir contraseña"
+              type="password"
+              value={administrador.passwordR}
+              onChange={(e) =>
+                setAdministrador({
+                  ...administrador,
+                  passwordR: e.target.value,
+                })
+              }
+              fullWidth
+            />
+          </div>
+          <div style={{ margin: 10 }}>
             <Typography variant="subtitle1">Clínica</Typography>
             <Divider style={{ marginBottom: 10 }} />
             <TextField
+              required
               select
               color="primary"
               variant="outlined"

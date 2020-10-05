@@ -68,12 +68,12 @@ class DataService {
     return response.data;
   }
 
-  async getAdministradores(page = 1, pageSize = 10, filter = "") {
+  async getAdministradores({page = 1, pageSize = 10, filter = ""} = {}) {
     const response = await axios.get(
       `${API_URL}/users?page=${page}&pageSize=${pageSize}&filter=${filter}&status=ACTIVE&roleID=2`,
       { headers: AuthService.header() }
     );
-    return response.data.data;
+    return response.data;
   }
 
   async postAdministrador(administrador) {
