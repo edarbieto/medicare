@@ -19,6 +19,7 @@ import {
   DialogContent,
   DialogActions,
   MenuItem,
+  TablePagination,
 } from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
 import AddIcon from "@material-ui/icons/Add";
@@ -63,10 +64,16 @@ export default function Pacientes(props) {
   const [idDepartamento, setIdDepartamento] = React.useState("");
   const [idProvincia, setIdProvincia] = React.useState("");
   const [clinicas, setClinicas] = React.useState([]);
+  const [filter, setFilter] = React.useState("");
+  const [page, setPage] = React.useState(1);
+  const [count, setCount] = React.useState(0);
   React.useEffect(() => {
     let mounted = true;
-    DataService.getPacientes().then((data) => {
-      if (mounted) setPacientes(data);
+    DataService.getPacientes({ filter: filter, page: page }).then((data) => {
+      if (mounted) {
+        setPacientes(data.data);
+        if (page === 1) setCount(data.count);
+      }
     });
     if (clinicas.length < 1) {
       DataService.getClinicas(1, 100).then((data) => {
@@ -87,7 +94,15 @@ export default function Pacientes(props) {
     return () => {
       mounted = false;
     };
-  }, [props.history.action, clinicas.length, departamentos.length, idDepartamento, idProvincia]);
+  }, [
+    props.history.action,
+    clinicas.length,
+    departamentos.length,
+    idDepartamento,
+    idProvincia,
+    filter,
+    page,
+  ]);
   return (
     <Switch>
       <Route exact path={`${path}`}>
@@ -204,13 +219,14 @@ export default function Pacientes(props) {
                       </IconButton>
                       <IconButton
                         onClick={() => {
-                          // DataService.deleteAdministrador(
-                          //   paciente.id
-                          // ).then(() => {
-                          //   DataService.getAdministradores().then((data) =>
-                          //     setAdministradores(data)
-                          //   );
-                          // });
+                          DataService.deletePaciente(paciente.id).then(() => {
+                            DataService.getPacientes().then((data) => {
+                              setPacientes(data.data);
+                              setCount(data.count);
+                              setPage(1);
+                              setFilter("");
+                            });
+                          });
                         }}
                       >
                         <DeleteIcon fontSize="small" />
@@ -220,6 +236,14 @@ export default function Pacientes(props) {
                 ))}
               </TableBody>
             </Table>
+            <TablePagination
+              component="div"
+              rowsPerPageOptions={[]}
+              rowsPerPage={10}
+              count={count}
+              page={page - 1}
+              onChangePage={(e, p) => setPage(p + 1)}
+            />
           </TableContainer>
           <Dialog
             maxWidth="lg"
@@ -579,16 +603,6 @@ export default function Pacientes(props) {
                 <Button
                   color="primary"
                   onClick={() => {
-                    // DataService.updateClinica(clinicaDialogData.clinica).then(
-                    //   () =>
-                    //     DataService.getClinicas().then((data) => {
-                    //       setClinicas(data);
-                    //       setClinicaDialogData({
-                    //         ...clinicaDialogData,
-                    //         open: false,
-                    //       });
-                    //     })
-                    // );
                     DataService.updatePaciente(
                       pacienteDialogData.paciente
                     ).then(() => {

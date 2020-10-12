@@ -4,7 +4,7 @@ import AuthService from "./AuthService";
 const API_URL = "http://3.230.230.245:5000/api";
 
 class DataService {
-  async getClinicas({page = 1, pageSize = 10, filter = ""} = {}) {
+  async getClinicas({ page = 1, pageSize = 10, filter = "" } = {}) {
     const response = await axios.get(
       `${API_URL}/clinics?page=${page}&pageSize=${pageSize}&filter=${filter}&status=ACTIVE`,
       { headers: AuthService.header() }
@@ -68,7 +68,7 @@ class DataService {
     return response.data;
   }
 
-  async getAdministradores({page = 1, pageSize = 10, filter = ""} = {}) {
+  async getAdministradores({ page = 1, pageSize = 10, filter = "" } = {}) {
     const response = await axios.get(
       `${API_URL}/users?page=${page}&pageSize=${pageSize}&filter=${filter}&status=ACTIVE&roleID=2`,
       { headers: AuthService.header() }
@@ -105,12 +105,12 @@ class DataService {
     return response.data;
   }
 
-  async getPacientes(page = 1, pageSize = 10, filter = "") {
+  async getPacientes({ page = 1, pageSize = 10, filter = "" } = {}) {
     const response = await axios.get(
       `${API_URL}/users?page=${page}&pageSize=${pageSize}&filter=${filter}&status=ACTIVE&roleID=4`,
       { headers: AuthService.header() }
     );
-    return response.data.data;
+    return response.data;
   }
 
   async postPaciente(paciente) {
@@ -128,6 +128,20 @@ class DataService {
         headers: AuthService.header(),
       }
     );
+    return response.data;
+  }
+
+  async deletePaciente(idPaciente) {
+    const response = await axios.delete(`${API_URL}/users/${idPaciente}`, {
+      headers: AuthService.header(),
+    });
+    return response.data;
+  }
+
+  async getTiposSangre() {
+    const response = await axios.get(`http://3.230.230.245:5001/BloodType/`, {
+      headers: AuthService.header(),
+    });
     return response.data;
   }
 }

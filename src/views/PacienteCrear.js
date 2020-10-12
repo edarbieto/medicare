@@ -13,6 +13,7 @@ import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import SaveIcon from "@material-ui/icons/Save";
 import { useHistory } from "react-router-dom";
 import DataService from "../services/DataService";
+import ReactSwal from "../components/ReactSwal";
 
 export default function PacienteCrear() {
   const history = useHistory();
@@ -21,12 +22,13 @@ export default function PacienteCrear() {
     firstName: "",
     lastName: "",
     password: "",
+    passwordR: "",
     email: "",
     birthDate: "",
     dni: "",
     cellPhone: "",
     ubigeo: "",
-    gender: "",
+    gender: true,
     clinic: { id: "" },
     height: "",
     weight: "",
@@ -34,7 +36,7 @@ export default function PacienteCrear() {
     hasTfcpc: false,
     hasCardiovascularProblems: false,
     hasDiabetes: false,
-    bloodTypeID: 1,
+    bloodTypeID: "",
   });
   const [clinicas, setClinicas] = React.useState([]);
   const [departamentos, setDepartamentos] = React.useState([]);
@@ -42,11 +44,17 @@ export default function PacienteCrear() {
   const [distritos, setDistritos] = React.useState([]);
   const [idDepartamento, setIdDepartamento] = React.useState("");
   const [idProvincia, setIdProvincia] = React.useState("");
+  const [tiposSangre, setTiposSangre] = React.useState([]);
   React.useEffect(() => {
     let mounted = true;
     if (clinicas.length < 1) {
       DataService.getClinicas(1, 100).then((data) => {
         if (mounted) setClinicas(data.data ? data.data : []);
+      });
+    }
+    if (tiposSangre.length < 1) {
+      DataService.getTiposSangre().then((data) => {
+        if (mounted) setTiposSangre(data ? data : []);
       });
     }
     if (departamentos.length < 1) {
@@ -61,7 +69,13 @@ export default function PacienteCrear() {
       if (mounted) setDistritos(data ? data : []);
     });
     return () => (mounted = false);
-  }, [clinicas.length, departamentos.length, idDepartamento, idProvincia]);
+  }, [
+    clinicas.length,
+    departamentos.length,
+    idDepartamento,
+    idProvincia,
+    tiposSangre.length,
+  ]);
   return (
     <div>
       <Typography variant="h4">Nuevo paciente</Typography>
@@ -88,9 +102,57 @@ export default function PacienteCrear() {
           variant="contained"
           startIcon={<SaveIcon />}
           onClick={() => {
-            const bDate = new Date(paciente.birthDate);
-            paciente.birthDate = bDate;
-            DataService.postPaciente(paciente).then((data) => history.goBack());
+            if (
+              !paciente.firstName ||
+              !paciente.lastName ||
+              !paciente.email ||
+              !paciente.birthDate ||
+              !paciente.dni ||
+              paciente.dni.length !== 8 ||
+              !/^\d+$/.test(paciente.dni) ||
+              !paciente.cellPhone ||
+              !paciente.address ||
+              !paciente.ubigeo ||
+              !paciente.password ||
+              !paciente.passwordR ||
+              paciente.password !== paciente.passwordR ||
+              !paciente.clinic.id ||
+              !parseFloat(paciente.height) ||
+              !parseFloat(paciente.weight) ||
+              !paciente.bloodTypeID
+            ) {
+              ReactSwal.fire({
+                icon: "error",
+                title: "Faltan datos",
+                text:
+                  "Revisar que todos los campos requeridos han sido completados y sean correctos",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+              });
+            } else {
+              const bDate = new Date(paciente.birthDate);
+              paciente.birthDate = bDate;
+              ReactSwal.fire({
+                icon: "info",
+                title: "Por favor, espere...",
+              });
+              ReactSwal.showLoading();
+              DataService.postPaciente(paciente)
+                .then(() => {
+                  history.goBack();
+                  ReactSwal.close();
+                })
+                .catch((error) => {
+                  let errs = [];
+                  for (const key in error.response.data.errors) errs.push(key);
+                  ReactSwal.fire({
+                    icon: "error",
+                    title: "Error al guardar datos",
+                    text: `${error.response.data.message}: ${errs.join(", ")}`,
+                  });
+                });
+            }
           }}
         >
           Guardar
@@ -102,6 +164,7 @@ export default function PacienteCrear() {
             <Typography variant="subtitle1">Información general</Typography>
             <Divider style={{ marginBottom: 10 }} />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -116,6 +179,7 @@ export default function PacienteCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -130,6 +194,7 @@ export default function PacienteCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -144,6 +209,7 @@ export default function PacienteCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -160,6 +226,7 @@ export default function PacienteCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -174,13 +241,7 @@ export default function PacienteCrear() {
               fullWidth
             />
             <TextField
-              color="primary"
-              variant="outlined"
-              margin="dense"
-              label="CE"
-              fullWidth
-            />
-            <TextField
+              required
               select
               color="primary"
               variant="outlined"
@@ -199,6 +260,7 @@ export default function PacienteCrear() {
               <MenuItem value={false}>Femenino</MenuItem>
             </TextField>
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -219,6 +281,7 @@ export default function PacienteCrear() {
             <Typography variant="subtitle1">Dirección</Typography>
             <Divider style={{ marginBottom: 10 }} />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -230,6 +293,7 @@ export default function PacienteCrear() {
               fullWidth
             />
             <TextField
+              required
               select
               color="primary"
               variant="outlined"
@@ -251,6 +315,7 @@ export default function PacienteCrear() {
               ))}
             </TextField>
             <TextField
+              required
               select
               color="primary"
               variant="outlined"
@@ -271,6 +336,7 @@ export default function PacienteCrear() {
               ))}
             </TextField>
             <TextField
+              required
               select
               color="primary"
               variant="outlined"
@@ -294,6 +360,7 @@ export default function PacienteCrear() {
             <Typography variant="subtitle1">Contraseña</Typography>
             <Divider style={{ marginBottom: 10 }} />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -309,11 +376,19 @@ export default function PacienteCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
               label="Repetir contraseña"
               type="password"
+              value={paciente.passwordR}
+              onChange={(e) =>
+                setPaciente({
+                  ...paciente,
+                  passwordR: e.target.value,
+                })
+              }
               fullWidth
             />
           </div>
@@ -321,6 +396,7 @@ export default function PacienteCrear() {
             <Typography variant="subtitle1">Clínica</Typography>
             <Divider style={{ marginBottom: 10 }} />
             <TextField
+              required
               select
               color="primary"
               variant="outlined"
@@ -349,6 +425,7 @@ export default function PacienteCrear() {
             <Typography variant="subtitle1">Perfil de paciente</Typography>
             <Divider style={{ marginBottom: 10 }} />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -361,6 +438,7 @@ export default function PacienteCrear() {
               fullWidth
             />
             <TextField
+              required
               color="primary"
               variant="outlined"
               margin="dense"
@@ -429,21 +507,27 @@ export default function PacienteCrear() {
               }
             />
             <TextField
+              required
               select
               color="primary"
               variant="outlined"
               margin="dense"
               label="Grupo sanguíneo"
-              // value={paciente.bloodTypeID}
-              // onChange={(e) => {
-              //   setPaciente({
-              //     ...paciente,
-              //     bloodTypeID: e.target.checked,
-              //   });
-              // }}
+              value={paciente.bloodTypeID}
+              onChange={(e) => {
+                setPaciente({
+                  ...paciente,
+                  bloodTypeID: e.target.value,
+                });
+              }}
+              disabled={tiposSangre.length < 1}
               fullWidth
             >
-              <MenuItem>A+</MenuItem>
+              {tiposSangre.map((tipoSangre) => (
+                <MenuItem key={tipoSangre.id} value={tipoSangre.id}>
+                  {tipoSangre.name}
+                </MenuItem>
+              ))}
             </TextField>
           </div>
         </Grid>

@@ -108,12 +108,12 @@ export default function AdministradorCrear() {
               });
             } else {
               const bDate = new Date(administrador.birthDate);
+              administrador.birthDate = bDate.toISOString();
               ReactSwal.fire({
                 icon: "info",
                 title: "Por favor, espere...",
               });
               ReactSwal.showLoading();
-              administrador.birthDate = bDate.toISOString();
               DataService.postAdministrador(administrador)
                 .then(() => {
                   history.goBack();
